@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<script type="text/javascript" src="/jsqrcode/src/grid.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/version.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/detector.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/formatinf.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/errorlevel.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/bitmat.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/datablock.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/bmparser.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/datamask.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/rsdecoder.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/gf256poly.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/gf256.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/decoder.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/qrcode.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/findpat.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/alignpat.js"></script>
+	<script type="text/javascript" src="/jsqrcode/src/databr.js"></script>
+</head>
+<body>
+	<div class="camera">
+		<video id="video" style="width: 300px; height: 300px;">Video stream not available.</video>
+		<button id="startbutton" onclick="takePicture()">Take photo</button>
+	</div>
+	<canvas id="canvas" style="width: 300px; height: 300px;"></canvas>
+	<img id="photo" src="" alt="" />
+</body>
+<script>
+	var video = document.getElementById('video');
+	var canvas = document.getElementById('canvas');
+	var photo = document.getElementById('photo');
+
+	var width = 300;
+	var height = 0;
+
+	qrcode.callback = function() {
+		console.log(arguments);
+	};
+
+	video.addEventListener('canplay', function(ev) {
+		height = video.videoHeight / (video.videoWidth/width);
+
+		if (isNaN(height)) {
+			height = width / (4/3);
+		}
+
+		video.setAttribute('width', width);
+        video.setAttribute('height', height);
+        canvas.setAttribute('width', width);
+        canvas.setAttribute('height', height);
+	}, false);
+
+	function takePicture() {
+		var context = canvas.getContext('2d');
+		canvas.width = width;
+		canvas.height = height;
+		context.drawImage(video, 0, 0, 300, 300);
+
+		var data = canvas.toDataURL('image/png');
+		qrcode.decode(data, {"test":123});
+		// photo.setAttribute('src', data);
+
+		// Clean canvas
+		context.fillStyle = '#fff';
+		context.fillRect(0, 0, canvas.width, canvas.height);
+	}
+
+	navigator.getMedia = ( navigator.getUserMedia ||
+                           navigator.webkitGetUserMedia ||
+                           navigator.mozGetUserMedia ||
+                           navigator.msGetUserMedia);
+
+	navigator.getMedia({
+		"video" : true,
+		"audio" : false
+	}, function(stream) {
+		var vendorURL = window.URL || window.webkitURL;
+		var video = document.getElementById("video");
+		video.src = vendorURL.createObjectURL(stream);
+		video.play();
+	}, function(error) {
+		console.warn(error);
+	});
+
+	setInterval(function() {
+		takePicture();
+	}, 200);
+
+</script>
+</html>

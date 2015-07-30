@@ -27,7 +27,7 @@ qrcode.sizeOfDataLengthInfo =  [  [ 10, 9, 8, 8 ],  [ 12, 11, 16, 10 ],  [ 14, 1
 
 qrcode.callback = null;
 
-qrcode.decode = function(src){
+qrcode.decode = function(src, attach){
     
     if(arguments.length==0)
     {
@@ -38,7 +38,7 @@ qrcode.decode = function(src){
         qrcode.imagedata = context.getImageData(0, 0, qrcode.width, qrcode.height);
         qrcode.result = qrcode.process(context);
         if(qrcode.callback!=null)
-            qrcode.callback(qrcode.result);
+            qrcode.callback(qrcode.result, attach);
         return qrcode.result;
     }
     else
@@ -68,21 +68,21 @@ qrcode.decode = function(src){
             }catch(e){
                 qrcode.result = "Cross domain image reading not supported in your browser! Save it to your computer then drag and drop the file!";
                 if(qrcode.callback!=null)
-                    qrcode.callback(qrcode.result);
+                    qrcode.callback(qrcode.result, attach);
                 return;
             }
             
             try
             {
                 qrcode.result = qrcode.process(context);
+                if(qrcode.callback!=null)
+                    qrcode.callback(qrcode.result, attach);
             }
             catch(e)
             {
-                console.log(e);
-                qrcode.result = "error decoding QR Code";
+                // console.log(e);
+                // qrcode.result = "error decoding QR Code";
             }
-            if(qrcode.callback!=null)
-                qrcode.callback(qrcode.result);
         }
         image.src = src;
     }
@@ -177,7 +177,6 @@ qrcode.process = function(ctx){
     
     var end = new Date().getTime();
     var time = end - start;
-    console.log(time);
     
     return qrcode.decode_utf8(str);
     //alert("Time:" + time + " Code: "+str);
